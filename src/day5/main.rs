@@ -24,12 +24,16 @@ fn part1(input: &str) -> u32 {
 fn part2(input: &str) -> u32 {
     let (seat_start, seat_end, sum) = input
         .lines()
-        .map(|x| get_seat_id(x))
-        .filter(|&seat| {
+        .filter_map(|x| {
             const VALID_START: u32 = 8;
             const VALID_END: u32 = (8 * 127) - 1;
 
-            VALID_START <= seat && seat <= VALID_END
+            let seat = get_seat_id(x);
+            if VALID_START <= seat && seat <= VALID_END {
+                Some(seat)
+            } else {
+                None
+            }
         })
         .fold(
             (std::u32::MAX, std::u32::MIN, 0),
