@@ -58,7 +58,7 @@ fn get_bag_types<'a>(map: &HashMap<&str, Vec<(u32, &'a str)>>, name: &str) -> Ha
             types = types.union(&content_types).cloned().collect();
             types.insert(content);
         }
-    };
+    }
 
     types
 }
@@ -68,11 +68,7 @@ fn part1(input: &str, mybag: &str) -> u32 {
 
     let mut counter = 0;
 
-    for (name, _) in &map {
-        if *name == mybag {
-            continue;
-        }
-
+    for (name, _) in map.iter().filter(|(&k, _)| k != mybag) {
         let bag_content = get_bag_types(&map, name);
         if bag_content.contains(mybag) {
             counter += 1;
