@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use std::fs;
 
 const INPUT_PATH: &str = "src/day5/input.txt";
@@ -35,19 +36,22 @@ fn part2(input: &str) -> u32 {
         VALID_START <= x && x <= VALID_END
     };
 
-    let mut seats: Vec<u32> = input
+    let mut seat_start = std::u32::MAX;
+    let mut seat_end = std::u32::MIN;
+    let mut sum = 0;
+
+    for seat in input
         .lines()
         .map(|x| get_seat_id(x))
         .filter(|&x| valid_filter(x))
-        .collect();
-    seats.sort_unstable();
+    {
+        seat_start = min(seat_start, seat);
+        seat_end = max(seat_end, seat);
 
-    let seat_start = seats[0];
-    let seat_end = seats[seats.len() - 1];
-    let sum: u32 = seats.iter().sum();
+        sum += seat;
+    }
 
     let sum_cb = |n| (n * (n + 1)) / 2;
-
     sum_cb(seat_end) - sum_cb(seat_start - 1) - sum
 }
 
