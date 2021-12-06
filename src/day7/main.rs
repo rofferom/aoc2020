@@ -1,26 +1,26 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 
 const INPUT_PATH: &str = "src/day7/input.txt";
 const BAGNAME: &str = "shiny gold";
 
-fn parse_subbags<'a>(input: &'a str) -> Option<(u32, &'a str)> {
-    if input.ends_with("no other bags.") {
-        return None;
-    };
+fn parse_subbags(input: &str) -> Option<(u32, &str)> {
+    if !input.ends_with("no other bags.") {
+        let count: u32 = input.chars().next().unwrap().to_digit(10).unwrap();
 
-    let count: u32 = input.chars().nth(0).unwrap().to_digit(10).unwrap();
+        let input = if input.ends_with('.') {
+            &input[0..(input.len() - 1)]
+        } else {
+            input
+        };
 
-    let input = if input.ends_with(".") {
-        &input[0..(input.len() - 1)]
+        if input.ends_with("bags") {
+            Some((count, &input[2..(input.len() - 5)]))
+        } else {
+            Some((count, &input[2..(input.len() - 4)]))
+        }
     } else {
-        input
-    };
-
-    if input.ends_with("bags") {
-        Some((count, &input[2..(input.len() - 5)]))
-    } else {
-        Some((count, &input[2..(input.len() - 4)]))
+        None
     }
 }
 
@@ -38,54 +38,32 @@ fn parse_desc(input: &str) -> (&str, Vec<(u32, &str)>) {
 }
 
 fn parse_input(input: &str) -> HashMap<&str, Vec<(u32, &str)>> {
-    let mut map: HashMap<&str, Vec<(u32, &str)>> = HashMap::new();
-
-    for l in input.lines() {
-        let (name, content) = parse_desc(l);
-        map.insert(name, content);
-    }
-
-    map
+    input.lines().map(|x| parse_desc(x)).collect()
 }
 
-fn get_bag_types<'a>(map: &HashMap<&str, Vec<(u32, &'a str)>>, name: &str) -> HashSet<&'a str> {
-    let mut types: HashSet<&'a str> = HashSet::new();
-
+fn find_bag(map: &HashMap<&str, Vec<(u32, &str)>>, name: &str, needle: &str) -> bool {
     if let Some(content) = map.get(name) {
-        for (_, content) in content {
-            let content_types = get_bag_types(map, content);
-
-            types = types.union(&content_types).cloned().collect();
-            types.insert(content);
-        }
+        content
+            .iter()
+            .any(|(_, content)| *content == needle || find_bag(map, content, needle))
+    } else {
+        false
     }
+}
 
-    types
+fn get_bag_content(map: &HashMap<&str, Vec<(u32, &str)>>, name: &str) -> u32 {
+    map.get(name).unwrap().iter().fold(0, |acc, (count, name)| {
+        acc + (1 + get_bag_content(map, name)) * count
+    })
 }
 
 fn part1(input: &str, mybag: &str) -> u32 {
     let map = parse_input(input);
 
-    let mut counter = 0;
-
-    for (name, _) in map.iter().filter(|(&k, _)| k != mybag) {
-        let bag_content = get_bag_types(&map, name);
-        if bag_content.contains(mybag) {
-            counter += 1;
-        }
-    }
-
-    counter
-}
-
-fn get_bag_content(map: &HashMap<&str, Vec<(u32, &str)>>, name: &str) -> u32 {
-    let mut counter = 0;
-
-    for (subbag_count, subbag_name) in map.get(name).unwrap() {
-        counter += (1 + get_bag_content(map, subbag_name)) * subbag_count;
-    }
-
-    counter
+    map.iter()
+        .filter(|(&name, _)| name != mybag)
+        .filter(|(&name, _)| find_bag(&map, name, mybag))
+        .count() as u32
 }
 
 fn part2(input: &str, mybag: &str) -> u32 {
