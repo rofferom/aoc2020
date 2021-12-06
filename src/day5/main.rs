@@ -3,23 +3,16 @@ use std::fs;
 
 const INPUT_PATH: &str = "src/day5/input.txt";
 
+fn convert<T>(i: T, one: char) -> u32
+where
+    T: Iterator<Item = char>,
+{
+    i.fold(0, |acc, c| (acc << 1) | ((c == one) as u32))
+}
+
 fn get_seat_id(input: &str) -> u32 {
-    let convert = |values: Vec<char>, high| -> u32 {
-        let mut result = 0;
-
-        for c in values {
-            result <<= 1;
-
-            if c == high {
-                result |= 1;
-            }
-        }
-
-        result
-    };
-
-    let row = convert(input.chars().take(7).collect(), 'B');
-    let column = convert(input.chars().skip(7).collect(), 'R');
+    let row = convert(input.chars().take(7), 'B');
+    let column = convert(input.chars().skip(7), 'R');
 
     row * 8 + column
 }
