@@ -5,13 +5,13 @@ use std::ops::RangeInclusive;
 const INPUT_PATH: &str = "src/day16/input.txt";
 
 #[derive(Debug)]
-struct Field {
-    class: String,
+struct Field<'a> {
+    class: &'a str,
     ranges: Vec<RangeInclusive<u32>>,
 }
 
-struct ParsedInput {
-    fields: Vec<Field>,
+struct ParsedInput<'a> {
+    fields: Vec<Field<'a>>,
     myticket: Vec<u32>,
     nearby_valids: Vec<Vec<u32>>,
     nearby_invalids: Vec<(Vec<u32>, u32)>,
@@ -42,7 +42,7 @@ fn parse_input(input: &str) -> ParsedInput {
             .collect();
 
         fields.push(Field {
-            class: class.to_string(),
+            class: class,
             ranges,
         });
     }
